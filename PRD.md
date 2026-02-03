@@ -150,8 +150,8 @@ The CLI must accept Mermaid syntax via:
 
 ### NFR1: Performance
 
-- Render a simple diagram in < 3 seconds on typical hardware
-- Browser instance reuse for potential future batch mode
+- Render a simple diagram in < 10 seconds on typical hardware (acceptable tradeoff for simplicity)
+- No specific optimization requirements for v1
 
 ### NFR2: Installation
 
