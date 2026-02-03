@@ -43,9 +43,9 @@ def main():
 @click.option(
     "-f", "--format",
     "output_format",
-    type=click.Choice(["png", "svg"]),
+    type=click.Choice(["png", "svg", "b64"]),
     default=None,
-    help="Output format (default: inferred from output extension)",
+    help="Output format (default: inferred from output extension). b64 creates a data URI.",
 )
 @click.option(
     "-t", "--theme",
@@ -119,11 +119,15 @@ def render(
         ext = output.suffix.lower()
         if ext == ".svg":
             output_format = "svg"
+        elif ext == ".b64":
+            output_format = "b64"
         else:
             output_format = "png"
 
     # Ensure output has correct extension
-    if output_format == "svg" and output.suffix.lower() != ".svg":
+    if output_format == "b64" and output.suffix.lower() != ".b64":
+        output = output.with_suffix(".b64")
+    elif output_format == "svg" and output.suffix.lower() != ".svg":
         output = output.with_suffix(".svg")
     elif output_format == "png" and output.suffix.lower() not in (".png", ""):
         output = output.with_suffix(".png")

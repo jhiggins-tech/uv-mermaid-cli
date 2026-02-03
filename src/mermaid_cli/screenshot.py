@@ -1,5 +1,6 @@
 """Screenshot capture using Playwright."""
 
+import base64
 import subprocess
 import sys
 from pathlib import Path
@@ -67,7 +68,7 @@ def capture_diagram(
         output_path: Path where the output image will be saved
         width: Viewport width in pixels
         scale: Device scale factor for higher resolution
-        output_format: Output format ('png' or 'svg')
+        output_format: Output format ('png', 'svg', or 'b64')
         timeout: Maximum time to wait for rendering in milliseconds
 
     Raises:
@@ -120,6 +121,14 @@ def capture_diagram(
 
                 # Write SVG to file
                 output_path.write_text(svg_content, encoding="utf-8")
+            elif output_format == "b64":
+                # Capture PNG as bytes and convert to base64 data URI
+                png_bytes = container.screenshot(type="png")
+                b64_data = base64.b64encode(png_bytes).decode("ascii")
+                data_uri = f"data:image/png;base64,{b64_data}"
+
+                # Write data URI to .b64 file
+                output_path.write_text(data_uri, encoding="utf-8")
             else:
                 # Take PNG screenshot of the container
                 container.screenshot(
