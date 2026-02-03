@@ -4,21 +4,36 @@ A CLI tool to convert Mermaid diagrams to images using Playwright.
 
 ## Installation
 
+### From GitHub (recommended)
+
 ```bash
-# Install with uv
+# Install as a global tool
+uv tool install git+https://github.com/jhiggins-tech/uv-mermaid-cli
+
+# Or run directly without installing
+uvx --from git+https://github.com/jhiggins-tech/uv-mermaid-cli mermaid-cli render "graph TD; A-->B;" -o diagram.png
+```
+
+### From PyPI
+
+```bash
 uv tool install uv-mermaid-cli
+```
+
+### From local build
+
+```bash
+# Build the wheel
+uv build
+
+# Install the built wheel
+uv tool install dist/uv_mermaid_cli-0.1.0-py3-none-any.whl
 ```
 
 Chromium browser will be **automatically installed** on first use. Or install it manually:
 
 ```bash
 mermaid-cli install
-```
-
-Run directly without installing:
-
-```bash
-uvx uv-mermaid-cli render "graph TD; A-->B;" -o diagram.png
 ```
 
 ## Usage
