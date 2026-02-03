@@ -1,6 +1,7 @@
 """Screenshot capture using Playwright."""
 
-import os
+import subprocess
+import sys
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
@@ -9,6 +10,46 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 class ScreenshotError(Exception):
     """Error during screenshot capture."""
     pass
+
+
+class BrowserNotFoundError(ScreenshotError):
+    """Raised when Chromium browser is not installed."""
+    pass
+
+
+def is_chromium_installed() -> bool:
+    """Check if Playwright's Chromium browser is installed."""
+    try:
+        with sync_playwright() as p:
+            # Try to get the executable path - this will fail if not installed
+            browser = p.chromium.launch(headless=True)
+            browser.close()
+            return True
+    except Exception as e:
+        if "Executable doesn't exist" in str(e) or "browserType.launch" in str(e):
+            return False
+        # Some other error - assume it's installed but broken
+        return True
+
+
+def install_chromium(quiet: bool = False) -> bool:
+    """Install Playwright's Chromium browser.
+
+    Args:
+        quiet: Suppress output if True
+
+    Returns:
+        True if installation succeeded, False otherwise
+    """
+    try:
+        cmd = [sys.executable, "-m", "playwright", "install", "chromium"]
+        if quiet:
+            subprocess.run(cmd, check=True, capture_output=True)
+        else:
+            subprocess.run(cmd, check=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
 
 
 def capture_diagram(
@@ -95,7 +136,5 @@ def capture_diagram(
             raise
         # Check for common Playwright installation issues
         if "Executable doesn't exist" in str(e) or "browserType.launch" in str(e):
-            raise ScreenshotError(
-                "Chromium browser not found. Please run: playwright install chromium"
-            )
+            raise BrowserNotFoundError("Chromium browser not found")
         raise ScreenshotError(f"Screenshot failed: {e}")

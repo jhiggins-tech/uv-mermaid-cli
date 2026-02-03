@@ -7,7 +7,13 @@ import click
 
 from . import __version__
 from .renderer import create_temp_html
-from .screenshot import capture_diagram, ScreenshotError
+from .screenshot import (
+    capture_diagram,
+    ScreenshotError,
+    BrowserNotFoundError,
+    is_chromium_installed,
+    install_chromium,
+)
 
 
 THEMES = ["default", "dark", "forest", "neutral"]
@@ -130,13 +136,32 @@ def render(
 
     try:
         # Capture screenshot
-        capture_diagram(
-            html_path=html_path,
-            output_path=output,
-            width=width,
-            scale=scale,
-            output_format=output_format,
-        )
+        try:
+            capture_diagram(
+                html_path=html_path,
+                output_path=output,
+                width=width,
+                scale=scale,
+                output_format=output_format,
+            )
+        except BrowserNotFoundError:
+            # Auto-install Chromium and retry
+            if not quiet:
+                click.echo("Chromium not found. Installing automatically...")
+            if not install_chromium(quiet=quiet):
+                raise click.ClickException(
+                    "Failed to install Chromium. Try running: mermaid-cli install"
+                )
+            if not quiet:
+                click.echo("Chromium installed. Rendering diagram...")
+            # Retry capture
+            capture_diagram(
+                html_path=html_path,
+                output_path=output,
+                width=width,
+                scale=scale,
+                output_format=output_format,
+            )
 
         if not quiet:
             click.echo(f"Done! Output saved to {output}")
@@ -154,6 +179,33 @@ def themes():
     click.echo("Available themes:")
     for theme in THEMES:
         click.echo(f"  - {theme}")
+
+
+@main.command()
+@click.option(
+    "-q", "--quiet",
+    is_flag=True,
+    help="Suppress output",
+)
+def install(quiet: bool):
+    """Install Chromium browser for rendering.
+
+    This downloads and installs the Chromium browser required by Playwright
+    for rendering Mermaid diagrams to images.
+    """
+    if is_chromium_installed():
+        if not quiet:
+            click.echo("Chromium is already installed.")
+        return
+
+    if not quiet:
+        click.echo("Installing Chromium browser...")
+
+    if install_chromium(quiet=quiet):
+        if not quiet:
+            click.echo("Chromium installed successfully.")
+    else:
+        raise click.ClickException("Failed to install Chromium.")
 
 
 if __name__ == "__main__":

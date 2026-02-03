@@ -7,12 +7,15 @@ A CLI tool to convert Mermaid diagrams to images using Playwright.
 ```bash
 # Install with uv
 uv tool install uv-mermaid-cli
-
-# Install Playwright's Chromium browser
-playwright install chromium
 ```
 
-Or run directly without installing:
+Chromium browser will be **automatically installed** on first use. Or install it manually:
+
+```bash
+mermaid-cli install
+```
+
+Run directly without installing:
 
 ```bash
 uvx uv-mermaid-cli render "graph TD; A-->B;" -o diagram.png
